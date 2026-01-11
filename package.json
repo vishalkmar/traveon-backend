@@ -1,0 +1,34 @@
+{
+  "name": "tour-and-visa-api",
+  "version": "1.0.0",
+  "description": "API for Oman Tour and Visa Services",
+  "main": "src/bin/app.js",
+  "scripts": {
+    "start": "node dist/bin/app.js",
+    "build": "babel src -d dist --copy-files",
+    "dev": "nodemon --exec babel-node src/bin/app.js",
+    "migrate": "sequelize-cli db:migrate",
+    "migrate:undo": "sequelize-cli db:migrate:undo",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cloudinary": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.11.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.16.0",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.35.1",
+    "sequelize-cli": "^6.5.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/node": "^7.28.0",
+    "@babel/preset-env": "^7.28.5",
+    "nodemon": "^3.0.1"
+  }
+}

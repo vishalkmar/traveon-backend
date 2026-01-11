@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetreatsByTraveon - Email Verification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background-color: #ffffff;
+      padding: 40px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    .header {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    .subheader {
+      font-size: 18px;
+      color: #7f8c8d;
+      margin-bottom: 30px;
+    }
+
+    .content {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #34495e;
+      text-align: left;
+    }
+
+    .otp-container {
+      background-color: #f8f9fa;
+      border: 2px dashed #3498db;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 30px 0;
+    }
+
+    .otp {
+      font-size: 32px;
+      font-weight: bold;
+      color: #e74c3c;
+      margin: 10px 0;
+      letter-spacing: 4px;
+    }
+
+    .otp-label {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      font-size: 14px;
+      color: #95a5a6;
+      margin-top: 30px;
+      border-top: 1px solid #ecf0f1;
+      padding-top: 20px;
+    }
+
+    .button {
+      display: inline-block;
+      background-color: #3498db;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+
+    .button:hover {
+      background-color: #2980b9;
+    }
+
+    .app-links {
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #ecf0f1;
+      border-radius: 8px;
+    }
+
+    .app-links a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #2ecc71;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .app-links a:hover {
+      background-color: #27ae60;
+    }
+
+    .security-notice {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #856404;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        padding: 20px;
+        margin: 20px;
+      }
+
+      .header {
+        font-size: 24px;
+      }
+
+      .content {
+        font-size: 14px;
+      }
+
+      .otp {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <img src="https://via.placeholder.com/120x60/3498db/ffffff?text=RetreatsByTraveon" alt="RetreatsByTraveon Logo" class="logo" />
+    
+    <div class="header">Welcome to RetreatsByTraveon! 🛍️</div>
+    <div class="subheader">Your Ultimate Shopping Destination</div>
+
+    <!-- OTP Verification -->
+    {{#if otpCode}}
+      <div class="content">
+      <p>Dear <strong>{{firstName}}</strong>,</p>
+      <p>Thank you for joining RetreatsByTraveon! To complete your registration and start shopping, please verify your email address using the code below:</p>
+      </div>
+
+    <div class="otp-container">
+      <div class="otp-label">Your Verification Code:</div>
+      <div class="otp">{{otpCode}}</div>
+      <div style="font-size: 12px; color: #7f8c8d;">This code will expire in 1 hour</div>
+      </div>
+
+    <div class="security-notice">
+      <strong>Security Notice:</strong> Never share this code with anyone. RetreatsByTraveon will never ask for your verification code via phone or email.
+      </div>
+
+      <div class="content">
+      <p>Once verified, you'll be able to:</p>
+      <ul style="text-align: left; margin: 20px 0;">
+        <li>Browse thousands of products</li>
+        <li>Enjoy exclusive deals and discounts</li>
+        <li>Track your orders in real-time</li>
+        <li>Access your shopping history</li>
+      </ul>
+    </div>
+    {{/if}}
+
+    <!-- Password Reset -->
+    {{#if forgetPassword}}
+      <div class="content">
+      <p>Dear <strong>{{firstName}}</strong>,</p>
+      <p>We received a request to reset your RetreatsByTraveon account password. Your password has been successfully reset.</p>
+      
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Your new login credentials:</strong></p>
+        <p>Email: <strong>{{emailAddress}}</strong></p>
+        <p>Password: <strong>{{userPassword}}</strong></p>
+      </div>
+
+      <p>For security reasons, we recommend changing your password after logging in.</p>
+    </div>
+    {{/if}}
+
+    <!-- Password Change Confirmation -->
+    {{#if passwordChange}}
+      <div class="content">
+      <p>Dear <strong>{{firstName}}</strong>,</p>
+      <p>This is to confirm that your RetreatsByTraveon account password has been successfully changed on <strong>{{passwordChangeDate}}</strong>.</p>
+      
+      <div class="security-notice">
+        <strong>Important:</strong> If you did not make this change, please contact our support team immediately.
+  </div>
+</div>
+{{/if}}
+
+    <!-- App Download Links -->
+  <div class="app-links">
+      <p style="margin-bottom: 15px; font-weight: bold;">Download our mobile app for the best shopping experience:</p>
+      <a href="#" style="background-color: #3498db;">📱 Android App</a>
+      <a href="#" style="background-color: #2c3e50;">🍎 iOS App</a>
+  </div>
+
+    <!-- Support Information -->
+  <div class="content">
+      <p>Need help? Our customer support team is here for you:</p>
+      <p>
+        📞 <strong>Phone:</strong> +1 (555) 123-4567<br>
+        📧 <strong>Email:</strong> support@RetreatsByTraveon.com<br>
+        💬 <strong>Live Chat:</strong> Available 24/7 on our website
+    </p>
+  </div>
+  
+    <div class="footer">
+      <p>Thank you for choosing RetreatsByTraveon!</p>
+      <p>Happy Shopping! 🛒</p>
+      <p style="margin-top: 20px; font-size: 12px; color: #bdc3c7;">
+        © 2024 RetreatsByTraveon. All rights reserved.<br>
+        This email was sent to {{emailAddress}}
+    </p>
+  </div>
+  </div>
+</body>
+
+</html>
