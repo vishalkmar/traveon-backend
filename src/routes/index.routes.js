@@ -1,20 +1,18 @@
 import express from "express";
-// import { login, logout, updateDetails, updatePassword } from '../controller/authController.js';
-// import { isAdmin } from '../middleware/auth.js';
 import tourRoutes from "./tourBooking.routes.js";
 import visaRoutes from "./visaBooking.routes.js";
 import uploadRoutes from "./upload.routes.js";
+import authRoutes from "./auth.routes.js";
+import contactRoutes from "./contact.routes.js";
+import adminRoutes from "./admin.routes.js";
 
 const router = express.Router();
 
 router.use("/v1/tour", tourRoutes);
 router.use("/v1/visa", visaRoutes);
 router.use("/v1/upload", uploadRoutes);
-
-// Auth routes (commented out as per original file structure during refactor)
-// router.post('/auth/login', login);
-// router.post('/auth/logout', logout);
-// router.put('/auth/update-details', isAdmin, updateDetails);
-// router.put('/auth/update-password', isAdmin, updatePassword);
+router.use("/v1/auth", authRoutes);
+router.use("/v1/contact", contactRoutes);
+router.use("/v1/admin", adminRoutes);
 
 export default router;
