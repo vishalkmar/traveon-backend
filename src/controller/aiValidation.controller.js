@@ -7,7 +7,7 @@ dotenv.config();
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 // Helper to get prompt based on document type
 const getValidationPrompt = (docType) => {
@@ -33,12 +33,19 @@ const getValidationPrompt = (docType) => {
       `;
     case "photo":
       return `
-        Analyze this image and determine if it is a valid PASSPORT-SIZE PHOTO (face visible, neutral background, etc).
+        Analyze this image and determine if it is valid.
+        VALIDATION RULES:
+        1. MUST contain exactly ONE face.
+        2. If there are multiple faces -> INVALID.
+        3. If there are no faces -> INVALID.
+        4. Background color DOES NOT MATTER (any background is clear).
+        5. Lighting should be clear enough to see the face.
+
         Return JSON:
         {
           "isValid": true/false,
           "confidence": (0-100),
-          "issues": ["list of issues"],
+          "issues": ["list of issues if any"],
           "extractedData": {} 
         }
       `;
