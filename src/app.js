@@ -13,6 +13,9 @@ const app = express();
 /* Cors middleware */
 app.use(cors({ origin: "*" }));
 
+// Enable trust proxy for rate limiter behind load balancers/proxies
+app.set("trust proxy", 1);
+
 /* Express middleware */
 app.use((req, res, next) => {
   res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");

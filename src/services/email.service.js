@@ -64,12 +64,17 @@ export const sendEmail = async (emailData) => {
 
     // Send email
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log(`Email sent successfully to: ${emailData.to}`);
+    console.log(
+      `[Email] Successfully queued to: ${emailData.to}. MessageID: ${result.messageId}`
+    );
     return result;
   } catch (error) {
-    console.error("Brevo API error:", error);
-    // Don't throw, just log so it doesn't block the main flow? Or throw if critical?
-    // Usually email failure shouldn't crash the request, but we might want to know.
-    console.error(`Failed to send email to ${emailData.to}`);
+    console.error(`[Email] FAILED to ${emailData.to}. Error:`, error.message);
+    if (error.response) {
+      console.error(
+        `[Email] Brevo Response:`,
+        JSON.stringify(error.response.body)
+      );
+    }
   }
 };
