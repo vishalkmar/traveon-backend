@@ -65,8 +65,17 @@ export const sendEmail = async (emailData) => {
     // Send email
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log(
-      `[Email] Successfully queued to: ${emailData.to}. MessageID: ${result.messageId}`
+      `[Email] Brevo Full Response:`,
+      JSON.stringify(result, null, 2)
     );
+
+    // Attempt to find messageID in common locations
+    const messageId =
+      result.messageId || (result.body && result.body.messageId);
+    console.log(
+      `[Email] Successfully queued to: ${emailData.to}. MessageID: ${messageId}`
+    );
+
     return result;
   } catch (error) {
     console.error(`[Email] FAILED to ${emailData.to}. Error:`, error.message);
