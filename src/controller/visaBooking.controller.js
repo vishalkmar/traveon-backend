@@ -1,6 +1,11 @@
 import db from "../models/index.js";
 import { uploadBuffer } from "../services/cloudinary.js";
 import { visaBookingSchema } from "../validation/booking.validation.js";
+import { sendEmail, EMAIL_SENDERS } from "../services/email.service.js";
+import {
+  visaBookingUserTemplate,
+  visaBookingAdminTemplate,
+} from "../services/emailTemplates.js";
 import { Op } from "sequelize";
 
 // Extract models from the db object
@@ -66,6 +71,35 @@ export const createVisaBooking = async (req, res) => {
     await VisaTraveller.bulkCreate(travellersToCreate, { transaction: t });
 
     await t.commit();
+
+    // Send Emails (Async)
+    const emailPayload = {
+      bookingId: booking.id,
+      visaType,
+      contactName,
+      contactEmail,
+      contactPhone,
+      numberOfTravellers,
+      totalAmount,
+      travellers: travellersToCreate,
+    };
+
+    // 1. User Confirmation
+    sendEmail({
+      to: contactEmail,
+      subject: "Visa Application Received - Traveon",
+      html: visaBookingUserTemplate(emailPayload),
+      sender: EMAIL_SENDERS.OPERATIONS,
+    }).catch((err) => console.error("Failed to send visa user email:", err));
+
+    // 2. Admin Notification
+    sendEmail({
+      to: EMAIL_SENDERS.OPERATIONS.email,
+      subject: `New Visa Application ALERT: ${contactName}`,
+      html: visaBookingAdminTemplate(emailPayload),
+      sender: EMAIL_SENDERS.OPERATIONS,
+    }).catch((err) => console.error("Failed to send visa admin email:", err));
+
     res.status(201).json({
       success: true,
       message: "Visa booking created successfully",

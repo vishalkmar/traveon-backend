@@ -6,8 +6,12 @@ import authRoutes from "./auth.routes.js";
 import contactRoutes from "./contact.routes.js";
 import adminRoutes from "./admin.routes.js";
 import validationRoutes from "./aiValidation.routes.js";
+import { apiLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
+
+// Apply global rate limiter
+router.use(apiLimiter);
 
 router.use("/v1/tour", tourRoutes);
 router.use("/v1/visa", visaRoutes);

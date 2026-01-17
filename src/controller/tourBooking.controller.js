@@ -1,6 +1,11 @@
 import db from "../models/index.js";
 import { uploadBuffer } from "../services/cloudinary.js";
 import { tourBookingSchema } from "../validation/booking.validation.js";
+import { sendEmail, EMAIL_SENDERS } from "../services/email.service.js";
+import {
+  tourBookingUserTemplate,
+  tourBookingAdminTemplate,
+} from "../services/emailTemplates.js";
 import { Op } from "sequelize";
 
 // Extract models from the db object (which is exported as default from models/index.js)
@@ -68,6 +73,36 @@ export const createTourBooking = async (req, res) => {
     await TourTraveller.bulkCreate(travellersToCreate, { transaction: t });
 
     await t.commit();
+
+    // Send Emails (Async - don't block response)
+    const emailPayload = {
+      bookingId: booking.id,
+      contactName,
+      contactEmail,
+      contactPhone,
+      numberOfTravellers,
+      totalAmount,
+      travellers: travellersToCreate, // Array of objects with URLs
+    };
+
+    // 1. User Confirmation
+    sendEmail({
+      to: contactEmail,
+      subject: "Tour Booking Received - Traveon",
+      html: tourBookingUserTemplate(emailPayload),
+      sender: EMAIL_SENDERS.OPERATIONS,
+    }).catch((err) =>
+      console.error("Failed to send tour confirmation email:", err)
+    );
+
+    // 2. Admin Notification
+    sendEmail({
+      to: EMAIL_SENDERS.OPERATIONS.email,
+      subject: `New Tour Booking ALERT: ${contactName}`,
+      html: tourBookingAdminTemplate(emailPayload),
+      sender: EMAIL_SENDERS.OPERATIONS,
+    }).catch((err) => console.error("Failed to send tour admin email:", err));
+
     res.status(201).json({
       success: true,
       message: "Tour booking created successfully",

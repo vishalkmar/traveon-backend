@@ -1,9 +1,22 @@
 const { ContactQuery } = require("../models");
 const { Op } = require("sequelize");
+const { sendEmail, EMAIL_SENDERS } = require("../services/email.service.js");
+const {
+  contactQueryUserTemplate,
+  contactQueryAdminTemplate,
+} = require("../services/emailTemplates.js");
+const { contactSchema } = require("../validation/contact.validation.js");
 
 // 1. Submit Query (Public)
 exports.submitQuery = async (req, res) => {
   try {
+    const { error } = contactSchema.validate(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
+
     const { name, email, phone, subject, message } = req.body;
     const newQuery = await ContactQuery.create({
       name,
@@ -12,6 +25,24 @@ exports.submitQuery = async (req, res) => {
       subject,
       message,
     });
+
+    // Send Acknowledgement Email to User (Fire & Forget)
+    sendEmail({
+      to: email,
+      subject: "We received your query - Traveon",
+      html: contactQueryUserTemplate({ name, subject, message }),
+    }).catch((err) => console.error("Failed to send user ack email:", err));
+
+    // Send Notification Email to Admin (Fire & Forget)
+    sendEmail({
+      to: EMAIL_SENDERS.INFO.email,
+      sender: { name: name, email: email },
+      subject: `New Contact Query: ${subject}`,
+      html: contactQueryAdminTemplate({ name, email, phone, subject, message }),
+    }).catch((err) =>
+      console.error("Failed to send admin notification email:", err)
+    );
+
     res.status(201).json({ success: true, data: newQuery });
   } catch (error) {
     console.error("Error submitting query:", error);
