@@ -11,9 +11,19 @@ const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 // Helper to get prompt based on document type
 const getValidationPrompt = (docType) => {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const context = `
+    Today's Date is: ${today}.
+    VALIDATION RULES BASED ON DATE:
+    - Expiry Dates (if any) MUST be in the FUTURE (after ${today}).
+    - Issue Dates / Date of Birth MUST be in the PAST (before or on ${today}).
+    - If a document has a valid 2025 or 2026 date that adheres to these rules, it is VALID.
+  `;
+
   switch (docType) {
     case "passport":
       return `
+        ${context}
         Analyze this document and determine if it is a valid PASSPORT.
         Return JSON:
         {
@@ -40,6 +50,7 @@ const getValidationPrompt = (docType) => {
         3. If there are no faces -> INVALID.
         4. Background color DOES NOT MATTER (any background is clear).
         5. Lighting should be clear enough to see the face.
+        6. IGNORE Metadata dates. Focus on the visual content.
 
         Return JSON:
         {
@@ -51,6 +62,7 @@ const getValidationPrompt = (docType) => {
       `;
     case "pan_card":
       return `
+        ${context}
         Analyze this document and determine if it is a valid INDIAN PAN CARD.
         Return JSON:
         {
@@ -67,6 +79,7 @@ const getValidationPrompt = (docType) => {
       `;
     case "aadhar_card":
       return `
+        ${context}
         Analyze this document and determine if it is a valid INDIAN AADHAR CARD.
         Return JSON:
         {
@@ -83,7 +96,9 @@ const getValidationPrompt = (docType) => {
       `;
     case "flight_ticket":
       return `
+          ${context}
           Analyze this document and determine if it is a valid FLIGHT TICKET / ITINERARY.
+          Note: Flight dates can be in the future (Upcoming travel). This is VALID.
           Return JSON:
           {
             "isValid": true/false,

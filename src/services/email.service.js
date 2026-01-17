@@ -12,7 +12,10 @@ apiInstance.setApiKey(
 
 // Define Sender Emails
 export const EMAIL_SENDERS = {
-  INFO: { name: "Traveon Info", email: "info@traveon.in" },
+  INFO: {
+    name: "Traveon Info",
+    email: "info@traveon.in",
+  },
   OPERATIONS: {
     name: "Traveon Operations",
     email: "operations@retreatsbytraveon.in",
@@ -33,8 +36,28 @@ export const sendEmail = async (emailData) => {
   try {
     const sendSmtpEmail = new brevo.SendSmtpEmail();
 
-    // Set sender (default to INFO if not provided)
-    sendSmtpEmail.sender = emailData.sender || EMAIL_SENDERS.INFO;
+    // 1. Set Sender (Must be verified domain/email in Brevo)
+    // We use the verified env var for delivery, but use the provided name.
+    const senderEmail = process.env.BREVO_SENDER_EMAIL;
+    const senderName =
+      emailData.sender?.name || process.env.BREVO_SENDER_NAME || "Traveon";
+
+    if (!senderEmail) {
+      throw new Error("BREVO_SENDER_EMAIL is not defined in .env");
+    }
+
+    sendSmtpEmail.sender = {
+      name: senderName,
+      email: senderEmail,
+    };
+
+    // 2. Set Reply-To (So replies go to info@traveon.in, not the verified sending email)
+    if (emailData.sender?.email && emailData.sender.email !== senderEmail) {
+      sendSmtpEmail.replyTo = {
+        email: emailData.sender.email,
+        name: senderName,
+      };
+    }
 
     // Set recipients
     sendSmtpEmail.to = Array.isArray(emailData.to)
@@ -56,9 +79,6 @@ export const sendEmail = async (emailData) => {
       sendSmtpEmail.attachment = emailData.attachments.map((att) => ({
         name: att.filename,
         content: att.content, // Base64 encoded content
-        // content: att.url ? undefined : att.content, // Brevo supports URL? SDK says 'content' (base64) or 'url'. Let's stick to content if we have buffer, or url if supported.
-        // For simplicity and based on user snippet, assuming content is passed.
-        // If we want to send files uploaded to Cloudinary, we might just include the LINK in the body instead of attachment to save bandwidth/complexity.
       }));
     }
 
