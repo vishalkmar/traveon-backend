@@ -41,8 +41,8 @@ app.set("etag", false);
 /* Routes */
 app.use("/api", routes);
 
-app.get("/*", (req, res) => {
-  res.status(404).send("We couldn't find the endpoint you were looking for!");
+app.get("/", (req, res) => {
+  res.status(200).send("Server is running successfully");
 });
 
 /* Error handler (next) */
