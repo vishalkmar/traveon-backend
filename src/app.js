@@ -6,6 +6,9 @@ import fs from "fs";
 
 dotenv.config();
 
+
+
+
 import routes from "./routes/index.routes.js";
 
 const app = express();
