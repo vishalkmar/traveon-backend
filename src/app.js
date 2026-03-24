@@ -45,6 +45,20 @@ app.get("/", (req, res) => {
   res.status(200).send("Server is running successfully");
 });
 
+app.get("/db-check", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.json({ success: true, message: "DB connected successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "DB connection failed",
+      error: error.message,
+    });
+  }
+});
+
 /* Error handler (next) */
 app.use(function (err, req, res, next) {
   if (err === "AccessDenied") {
