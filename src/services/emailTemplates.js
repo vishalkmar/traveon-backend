@@ -1,3 +1,14 @@
+// Escape HTML special characters to prevent injection issues
+const escapeHtml = (text) => {
+  if (!text) return "";
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 const getBaseTemplate = (title, content) => `
 <!DOCTYPE html>
 <html>
@@ -42,13 +53,13 @@ export const contactQueryUserTemplate = (data) =>
   getBaseTemplate(
     "We Received Your Query",
     `
-    <p>Hi <strong>${data.name}</strong>,</p>
+    <p>Hi <strong>${escapeHtml(data.name)}</strong>,</p>
     <p>Thank you for reaching out to Traveon. We have successfully received your message.</p>
-    <p>Our team is currently reviewing your query regarding <span class="highlight">"${data.subject}"</span> and will get back to you as soon as possible.</p>
+    <p>Our team is currently reviewing your query regarding <span class="highlight">"${escapeHtml(data.subject)}"</span> and will get back to you as soon as possible.</p>
     
     <div style="background-color: #f8fafc; padding: 20px; border-radius: 6px; margin-top: 20px;">
       <h3 style="margin-top: 0; font-size: 16px; color: #334155;">Your Message:</h3>
-      <p style="margin-bottom: 0; color: #64748b; font-style: italic;">"${data.message}"</p>
+      <p style="margin-bottom: 0; color: #64748b; font-style: italic;">"${escapeHtml(data.message)}"</p>
     </div>
     
     <p style="margin-top: 30px;">Best Regards,<br><strong>Team Traveon</strong></p>
@@ -63,15 +74,15 @@ export const contactQueryAdminTemplate = (data) =>
     <p>You have received a new inquiry from the website contact form.</p>
     
     <table class="info-table">
-      <tr><td>Name:</td><td>${data.name}</td></tr>
-      <tr><td>Email:</td><td><a href="mailto:${data.email}">${data.email}</a></td></tr>
-      <tr><td>Phone:</td><td>${data.phone}</td></tr>
-      <tr><td>Subject:</td><td>${data.subject}</td></tr>
+      <tr><td>Name:</td><td>${escapeHtml(data.name)}</td></tr>
+      <tr><td>Email:</td><td><a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a></td></tr>
+      <tr><td>Phone:</td><td>${escapeHtml(data.phone)}</td></tr>
+      <tr><td>Subject:</td><td>${escapeHtml(data.subject)}</td></tr>
     </table>
     
     <h3 style="font-size: 16px; margin-top: 24px; margin-bottom: 12px;">Message:</h3>
-    <div style="background-color: #f1f5f9; padding: 16px; border-left: 4px solid #4f46e5; border-radius: 4px;">
-      ${data.message}
+    <div style="background-color: #f1f5f9; padding: 16px; border-left: 4px solid #4f46e5; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+      ${escapeHtml(data.message)}
     </div>
   `
   );
