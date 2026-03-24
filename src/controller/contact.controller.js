@@ -26,14 +26,7 @@ exports.submitQuery = async (req, res) => {
       message,
     });
 
-    // Send Acknowledgement Email to User (Fire & Forget)
-    sendEmail({
-      to: email,
-      subject: "We received your query - Traveon",
-      html: contactQueryUserTemplate({ name, subject, message }),
-    }).catch((err) => console.error("Failed to send user ack email:", err));
-
-    // Send Notification Email to Admin (Fire & Forget)
+    // Send Notification Email to Admin Only (Fire & Forget)
     sendEmail({
       to: EMAIL_SENDERS.INFO.email,
       sender: { name: name, email: email },
