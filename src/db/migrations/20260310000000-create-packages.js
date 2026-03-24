@@ -2,6 +2,14 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check if packages table already exists
+    const tableExists = await queryInterface.showAllTables().then(tables => tables.includes('packages'));
+    
+    if (tableExists) {
+      console.log('Packages table already exists, skipping creation');
+      return;
+    }
+
     await queryInterface.createTable("packages", {
       id: {
         allowNull: false,

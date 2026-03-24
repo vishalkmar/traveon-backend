@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateToken } = require("../middleware/auth.middleware");
-const { TourBooking, VisaBooking, ContactQuery, User } = require("../models");
+const { TourBooking, VisaBooking, ContactQuery, User, Blog } = require("../models");
 
 // Get Dashboard Stats
 router.get("/stats", authenticateToken, async (req, res) => {
@@ -14,6 +14,7 @@ router.get("/stats", authenticateToken, async (req, res) => {
       where: { visaType: "30_DAYS" },
     });
     const queryCount = await ContactQuery.count();
+    const blogCount = await Blog.count();
     const totalInquiries = tourCount + visa10Count + visa30Count;
 
     res.json({
@@ -23,6 +24,7 @@ router.get("/stats", authenticateToken, async (req, res) => {
         visa10Count,
         visa30Count,
         queryCount,
+        blogCount,
         totalInquiries,
       },
     });

@@ -2,14 +2,23 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("tour_bookings", "updatedBy", {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
-    await queryInterface.addColumn("visa_bookings", "updatedBy", {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
+    // Check if updatedBy column exists in tour_bookings before adding
+    const tourBookingColumns = await queryInterface.describeTable("tour_bookings");
+    if (!tourBookingColumns.updatedBy) {
+      await queryInterface.addColumn("tour_bookings", "updatedBy", {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
+
+    // Check if updatedBy column exists in visa_bookings before adding
+    const visaBookingColumns = await queryInterface.describeTable("visa_bookings");
+    if (!visaBookingColumns.updatedBy) {
+      await queryInterface.addColumn("visa_bookings", "updatedBy", {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
   },
 
   async down(queryInterface, Sequelize) {

@@ -5,16 +5,28 @@ const { v4: uuidv4 } = require("uuid");
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const hashedPassword = await bcrypt.hash("Admin@123", 10);
-    return queryInterface.bulkInsert("users", [
+
+    // Check if admin user already exists
+    const existingAdmin = await queryInterface.rawSelect(
+      "users",
       {
-        id: uuidv4(),
-        username: "Traveon",
-        password: hashedPassword,
-        role: "admin",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        where: { username: "Traveon" },
       },
-    ]);
+      ["id"]
+    );
+
+    if (!existingAdmin) {
+      return queryInterface.bulkInsert("users", [
+        {
+          id: uuidv4(),
+          username: "Traveon",
+          password: hashedPassword,
+          role: "admin",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+    }
   },
 
   down: async (queryInterface, Sequelize) => {
