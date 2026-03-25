@@ -1,8 +1,8 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-exports.authenticateToken = (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
@@ -20,10 +20,10 @@ exports.authenticateToken = (req, res, next) => {
 };
 
 // Alias for authenticateToken
-exports.authenticate = exports.authenticateToken;
+export const authenticate = authenticateToken;
 
 // Authorize by role
-exports.authorize = (allowedRoles) => {
+export const authorize = (allowedRoles) => {
   // Handle both string and array of roles
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
   
@@ -44,3 +44,4 @@ exports.authorize = (allowedRoles) => {
     next();
   };
 };
+
