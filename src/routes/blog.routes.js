@@ -1,7 +1,6 @@
-const express = require("express");
-const router = express.Router();
-const { authenticate, authorize } = require("../middleware/auth.middleware");
-const {
+import express from "express";
+import { authenticate, authorize } from "../middleware/auth.middleware.js";
+import {
   createBlog,
   getAllBlogs,
   getBlogById,
@@ -9,12 +8,14 @@ const {
   updateBlog,
   deleteBlog,
   getBlogsByDestination,
-} = require("../controller/blog.controller");
-const {
+} from "../controller/blog.controller.js";
+import {
   validateCreateBlog,
   validateUpdateBlog,
   handleValidationErrors,
-} = require("../validation/blog.validation");
+} from "../validation/blog.validation.js";
+
+const router = express.Router();
 
 // Public routes
 router.get("/", getAllBlogs);
@@ -41,4 +42,4 @@ router.put(
 );
 router.delete("/:id", authenticate, authorize("admin"), deleteBlog);
 
-module.exports = router;
+export default router;

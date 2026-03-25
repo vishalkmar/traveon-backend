@@ -7,10 +7,9 @@ import contactRoutes from "./contact.routes.js";
 import adminRoutes from "./admin.routes.js";
 import validationRoutes from "./aiValidation.routes.js";
 import packageRoutes from "./package.routes.js";
+import destinationRoutes from "./destination.routes.js";
+import blogRoutes from "./blog.routes.js";
 import { apiLimiter } from "../middleware/rateLimiter.js";
-
-const destinationRoutes = require("./destination.routes.js");
-const blogRoutes = require("./blog.routes.js");
 
 const router = express.Router();
 

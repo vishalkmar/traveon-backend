@@ -1,7 +1,7 @@
-const { Destination, Blog } = require("../models");
+import { Destination, Blog } from "../models/index.js";
 
 // Create Destination
-exports.createDestination = async (req, res) => {
+export const createDestination = async (req, res) => {
   try {
     const { name, description, image } = req.body;
 
@@ -59,7 +59,7 @@ exports.createDestination = async (req, res) => {
 };
 
 // Get All Destinations
-exports.getAllDestinations = async (req, res) => {
+export const getAllDestinations = async (req, res) => {
   try {
     const destinations = await Destination.findAll({
       include: [
@@ -85,7 +85,7 @@ exports.getAllDestinations = async (req, res) => {
 };
 
 // Get Single Destination with Blogs
-exports.getDestinationWithBlogs = async (req, res) => {
+export const getDestinationWithBlogs = async (req, res) => {
   try {
     const { slug } = req.params;
 
@@ -120,7 +120,7 @@ exports.getDestinationWithBlogs = async (req, res) => {
 };
 
 // Update Destination
-exports.updateDestination = async (req, res) => {
+export const updateDestination = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, image } = req.body;
@@ -168,7 +168,7 @@ exports.updateDestination = async (req, res) => {
 };
 
 // Delete Destination
-exports.deleteDestination = async (req, res) => {
+export const deleteDestination = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -194,4 +194,12 @@ exports.deleteDestination = async (req, res) => {
       message: "Error deleting destination",
     });
   }
+};
+
+export default {
+  createDestination,
+  getAllDestinations,
+  getDestinationWithBlogs,
+  updateDestination,
+  deleteDestination,
 };

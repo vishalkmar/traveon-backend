@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import destinationController from "../controller/destination.controller.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
+
 const router = express.Router();
-const destinationController = require("../controller/destination.controller");
-const { authenticateToken } = require("../middleware/auth.middleware");
 
 // Public routes
 router.get("/", destinationController.getAllDestinations);
@@ -12,4 +13,4 @@ router.post("/", authenticateToken, destinationController.createDestination);
 router.patch("/:id", authenticateToken, destinationController.updateDestination);
 router.delete("/:id", authenticateToken, destinationController.deleteDestination);
 
-module.exports = router;
+export default router;

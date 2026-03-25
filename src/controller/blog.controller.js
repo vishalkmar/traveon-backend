@@ -1,8 +1,8 @@
-const { Blog, Destination } = require("../models");
-const { v4: uuidv4 } = require("uuid");
+import { Blog, Destination } from "../models/index.js";
+import { v4 as uuidv4 } from "uuid";
 
 // Create Blog
-exports.createBlog = async (req, res) => {
+export const createBlog = async (req, res) => {
   try {
     const { title, destinationId, images, excerpt, content, author, category, readTime, date } = req.body;
 
@@ -66,7 +66,7 @@ exports.createBlog = async (req, res) => {
 };
 
 // Get All Blogs
-exports.getAllBlogs = async (req, res) => {
+export const getAllBlogs = async (req, res) => {
   try {
     const { destinationId, category, page = 1, limit = 10 } = req.query;
     
@@ -111,7 +111,7 @@ exports.getAllBlogs = async (req, res) => {
 };
 
 // Get Blog By ID
-exports.getBlogById = async (req, res) => {
+export const getBlogById = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -147,7 +147,7 @@ exports.getBlogById = async (req, res) => {
 };
 
 // Get Blog By Slug
-exports.getBlogBySlug = async (req, res) => {
+export const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
@@ -184,7 +184,7 @@ exports.getBlogBySlug = async (req, res) => {
 };
 
 // Update Blog
-exports.updateBlog = async (req, res) => {
+export const updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, destinationId, images, excerpt, content, author, category, readTime, date } = req.body;
@@ -240,7 +240,7 @@ exports.updateBlog = async (req, res) => {
 };
 
 // Delete Blog
-exports.deleteBlog = async (req, res) => {
+export const deleteBlog = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -269,7 +269,7 @@ exports.deleteBlog = async (req, res) => {
 };
 
 // Get Blogs by Destination
-exports.getBlogsByDestination = async (req, res) => {
+export const getBlogsByDestination = async (req, res) => {
   try {
     const { destinationId } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -310,4 +310,14 @@ exports.getBlogsByDestination = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export default {
+  createBlog,
+  getAllBlogs,
+  getBlogById,
+  getBlogBySlug,
+  updateBlog,
+  deleteBlog,
+  getBlogsByDestination,
 };
