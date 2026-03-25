@@ -82,7 +82,7 @@ export const getAllBlogs = async (req, res) => {
         {
           model: Destination,
           as: "destination",
-          attributes: ["id", "name", "countryName", "slug"],
+          attributes: ["id", "name", "slug"],
         },
       ],
       limit: parseInt(limit),
@@ -120,7 +120,7 @@ export const getBlogById = async (req, res) => {
         {
           model: Destination,
           as: "destination",
-          attributes: ["id", "name", "countryName", "slug"],
+          attributes: ["id", "name", "slug"],
         },
       ],
     });
@@ -157,7 +157,7 @@ export const getBlogBySlug = async (req, res) => {
         {
           model: Destination,
           as: "destination",
-          attributes: ["id", "name", "countryName", "slug"],
+          attributes: ["id", "name", "slug"],
         },
       ],
     });
