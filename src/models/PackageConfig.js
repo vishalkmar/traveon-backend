@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
   class PackageConfig extends Model {
     static associate(models) {
       // association can be defined here
-      this.belongsTo(models.Package, { foreignKey: 'packageId' });
+      this.belongsTo(models.Package, { foreignKey: 'packageId', targetKey: 'id' });
     }
   }
   PackageConfig.init({
