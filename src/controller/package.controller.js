@@ -1,10 +1,28 @@
 import db from "../models/index.js";
+import { Op } from "sequelize";
 import {
   createPackageSchema,
   updatePackageSchema,
 } from "../validation/package.validation.js";
 
 const Package = db.Package;
+const PackageConfig = db.PackageConfig;
+
+/** Route param is either DB UUID (`packages.id`) or numeric GTX id (`gtx_pkg_id`). */
+const ANY_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function findPackageByIdOrGtx(idParam) {
+  if (idParam === undefined || idParam === null) return null;
+  const s = String(idParam).trim();
+  if (ANY_UUID_RE.test(s)) {
+    return Package.findByPk(s);
+  }
+  if (/^\d+$/.test(s)) {
+    return Package.findOne({ where: { gtxPkgId: Number(s) } });
+  }
+  return Package.findByPk(s);
+}
 
 const isNil = (value) => value === undefined || value === null;
 
@@ -331,6 +349,32 @@ export const getAllPackages = async (req, res) => {
     const limitNumber = parseInt(limit, 10);
     const offset = (pageNumber - 1) * limitNumber;
 
+    const disabledRows = await PackageConfig.findAll({
+      where: { isEnabled: false },
+      attributes: ["gtxPkgId"],
+    });
+    const disabledGtx = disabledRows.map((r) => r.gtxPkgId);
+    if (disabledGtx.length > 0) {
+      if (gtxPkgId) {
+        const gtx = Number(gtxPkgId);
+        if (disabledGtx.includes(gtx)) {
+          return res.status(200).json({
+            success: true,
+            message: "Packages retrieved successfully",
+            data: [],
+            pagination: {
+              total: 0,
+              page: pageNumber,
+              limit: limitNumber,
+              pages: 0,
+            },
+          });
+        }
+      } else {
+        where.gtxPkgId = { [Op.notIn]: disabledGtx };
+      }
+    }
+
     const { count, rows } = await Package.findAndCountAll({
       where,
       limit: limitNumber,
@@ -364,9 +408,19 @@ export const getPackageById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const packageData = await Package.findByPk(id);
+    const packageData = await findPackageByIdOrGtx(id);
 
     if (!packageData) {
+      return res.status(404).json({
+        success: false,
+        message: "Package not found",
+      });
+    }
+
+    const cfg = await PackageConfig.findOne({
+      where: { gtxPkgId: packageData.gtxPkgId },
+    });
+    if (cfg && cfg.isEnabled === false) {
       return res.status(404).json({
         success: false,
         message: "Package not found",
@@ -411,6 +465,16 @@ export const getPackageByGtxPkgId = async (req, res) => {
       });
     }
 
+    const cfg = await PackageConfig.findOne({
+      where: { gtxPkgId: packageData.gtxPkgId },
+    });
+    if (cfg && cfg.isEnabled === false) {
+      return res.status(404).json({
+        success: false,
+        message: "Package not found",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "Package retrieved successfully",
@@ -431,7 +495,7 @@ export const updatePackage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existingPackage = await Package.findByPk(id);
+    const existingPackage = await findPackageByIdOrGtx(id);
 
     if (!existingPackage) {
       return res.status(404).json({
@@ -553,7 +617,7 @@ export const deletePackage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const packageData = await Package.findByPk(id);
+    const packageData = await findPackageByIdOrGtx(id);
 
     if (!packageData) {
       return res.status(404).json({

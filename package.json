@@ -8,7 +8,8 @@
     "build": "babel src -d dist --copy-files",
     "dev": "nodemon --exec babel-node src/bin/app.js",
     "migrate": "sequelize-cli db:migrate",
-    "migrate:undo": "sequelize-cli db:migrate:undo"
+    "migrate:undo": "sequelize-cli db:migrate:undo",
+    "test:package-gtx": "powershell -ExecutionPolicy Bypass -File ./scripts/test-package-gtx-put.ps1"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",

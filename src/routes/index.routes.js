@@ -9,6 +9,7 @@ import validationRoutes from "./aiValidation.routes.js";
 import packageRoutes from "./package.routes.js";
 import destinationRoutes from "./destination.routes.js";
 import blogRoutes from "./blog.routes.js";
+import packageConfigRoutes from "./packageConfig.routes.js";
 import { apiLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.use("/v1/contact", contactRoutes);
 router.use("/v1/admin", adminRoutes);
 router.use("/v1/validation", validationRoutes);
 router.use("/v1/packages", packageRoutes);
+router.use("/v1/package-config", packageConfigRoutes);
 router.use("/v1/destinations", destinationRoutes);
 router.use("/v1/blog", blogRoutes);
 

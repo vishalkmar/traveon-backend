@@ -5,6 +5,10 @@ import {
   getPackageById,
   updatePackage,
   deletePackage,
+  upsertPackageByGtxPkgId,
+  getPackageByGtxPkgId,
+  updatePackageByGtxPkgId,
+  deletePackageByGtxPkgId,
 } from "../controller/package.controller.js";
 
 const router = express.Router();
@@ -22,16 +26,22 @@ router.get("/test", (req, res) => {
 // POST - Create new package
 router.post("/", createPackage);
 
+// POST - Create or update by gtxPkgId (body must include gtxPkgId)
+router.post("/upsert", upsertPackageByGtxPkgId);
+
+// Explicit GTX id routes (must be before /:id so "gtx" is not captured as id)
+router.get("/gtx/:gtxPkgId", getPackageByGtxPkgId);
+router.put("/gtx/:gtxPkgId", updatePackageByGtxPkgId);
+router.delete("/gtx/:gtxPkgId", deletePackageByGtxPkgId);
+
 // GET - Get all packages with filters and pagination
 router.get("/", getAllPackages);
 
-// GET - Get package by ID
+// GET/PUT/DELETE by UUID or numeric GTX id — :id can be packages.id OR gtxPkgId
 router.get("/:id", getPackageById);
 
-// PUT - Update package
 router.put("/:id", updatePackage);
 
-// DELETE - Delete package
 router.delete("/:id", deletePackage);
 
 export default router;
