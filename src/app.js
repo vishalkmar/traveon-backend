@@ -3,8 +3,11 @@ import cors from "cors";
 import path from "path";
 import dotenv from "dotenv";
 import fs from "fs";
+import db from "./models/index.js";
 
 dotenv.config();
+
+const { sequelize } = db;
 
 
 
