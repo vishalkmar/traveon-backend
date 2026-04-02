@@ -3,76 +3,34 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('package_configs', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      package_id: {
-        type: Sequelize.CHAR(36),
-        allowNull: false,
-        unique: true,
-        references: {
-          model: 'packages',
-          key: 'id'
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
-      },
-      gtx_pkg_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      package_name: {
-        type: Sequelize.STRING(255),
-        allowNull: true
-      },
-      countries_id: {
-        type: Sequelize.STRING(255),
-        allowNull: true
-      },
-      min_price: {
-        type: Sequelize.DECIMAL(15, 2),
-        allowNull: true
-      },
-      max_price: {
-        type: Sequelize.DECIMAL(15, 2),
-        allowNull: true
-      },
-      is_enabled: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true,
-        comment: 'true = enabled, false = disabled'
-      },
-      disabled_at: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
-      enabled_at: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
-      created_at: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.fn('NOW')
-      },
-      updated_at: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.fn('NOW')
-      }
-    });
-
-    // Add index for faster queries
-    await queryInterface.addIndex('package_configs', ['gtx_pkg_id']);
-    await queryInterface.addIndex('package_configs', ['is_enabled']);
-    await queryInterface.addIndex('package_configs', ['countries_id']);
+    // Use raw SQL to avoid Sequelize foreign key issues
+    await queryInterface.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS package_configs (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        package_id CHAR(36) NOT NULL UNIQUE,
+        gtx_pkg_id INT NOT NULL,
+        package_name VARCHAR(255),
+        countries_id VARCHAR(255),
+        min_price DECIMAL(15, 2),
+        max_price DECIMAL(15, 2),
+        is_enabled BOOLEAN DEFAULT true,
+        disabled_at DATETIME,
+        enabled_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_gtx_pkg_id (gtx_pkg_id),
+        KEY idx_is_enabled (is_enabled),
+        KEY idx_countries_id (countries_id),
+        CONSTRAINT fk_package_configs_package_id 
+          FOREIGN KEY (package_id) 
+          REFERENCES packages(id) 
+          ON DELETE CASCADE 
+          ON UPDATE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('package_configs');
+    await queryInterface.sequelize.query('DROP TABLE IF EXISTS package_configs;');
   }
 };
