@@ -1,5 +1,7 @@
-import { Package, PackageConfig } from "../models/index.js";
+import db from "../models/index.js";
 import { Op } from "sequelize";
+
+const { Package, PackageConfig } = db;
 
 const packageHasCountryId = (pkg, countryId) => {
   const cid = String(countryId).trim();

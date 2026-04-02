@@ -1,4 +1,6 @@
-import { Destination, Blog } from "../models/index.js";
+import db from "../models/index.js";
+
+const { Destination, Blog } = db;
 
 // Create Destination
 export const createDestination = async (req, res) => {

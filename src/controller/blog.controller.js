@@ -1,4 +1,6 @@
-import { Blog, Destination } from "../models/index.js";
+import db from "../models/index.js";
+
+const { Blog, Destination } = db;
 import { v4 as uuidv4 } from "uuid";
 
 // Create Blog
