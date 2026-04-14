@@ -5,6 +5,8 @@ import {
   getEnabledPackages,
   getPackageConfigDetails,
   togglePackageStatus,
+  toggleTopSelling,
+  getTopSellingGtxIds,
   bulkUpdatePackageStatus
 } from "../controller/packageConfig.controller.js";
 import { authenticateToken, authorize } from "../middleware/auth.middleware.js";
@@ -20,6 +22,9 @@ router.get("/", getAllPackagesConfig);
 // Get enabled packages
 router.get("/enabled", getEnabledPackages);
 
+// Get top-selling gtxPkgIds (public)
+router.get("/top-selling", getTopSellingGtxIds);
+
 // Get package config details
 router.get("/:gtxPkgId", getPackageConfigDetails);
 
@@ -29,6 +34,14 @@ router.put(
   authenticateToken,
   authorize("admin"),
   togglePackageStatus
+);
+
+// Toggle top-selling flag (admin only)
+router.put(
+  "/:gtxPkgId/top-selling",
+  authenticateToken,
+  authorize("admin"),
+  toggleTopSelling
 );
 
 // Bulk update package status (admin only)

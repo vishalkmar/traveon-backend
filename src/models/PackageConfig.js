@@ -49,6 +49,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true,
       comment: 'true = enabled, false = disabled'
     },
+    isTopSelling: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'true = marked as top selling, shown first on packages page'
+    },
     disabledAt: {
       type: DataTypes.DATE,
       allowNull: true
