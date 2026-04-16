@@ -54,6 +54,12 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       comment: 'true = marked as top selling, shown first on packages page'
     },
+    flowString: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Custom WhatsApp pre-filled message for this package Book Now button'
+    },
     disabledAt: {
       type: DataTypes.DATE,
       allowNull: true

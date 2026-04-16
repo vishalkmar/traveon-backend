@@ -10,6 +10,7 @@ import packageRoutes from "./package.routes.js";
 import destinationRoutes from "./destination.routes.js";
 import blogRoutes from "./blog.routes.js";
 import packageConfigRoutes from "./packageConfig.routes.js";
+import whatsappFlowRoutes from "./whatsappFlow.routes.js";
 import { apiLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
@@ -28,5 +29,6 @@ router.use("/v1/packages", packageRoutes);
 router.use("/v1/package-config", packageConfigRoutes);
 router.use("/v1/destinations", destinationRoutes);
 router.use("/v1/blog", blogRoutes);
+router.use("/v1/whatsapp-flows", whatsappFlowRoutes);
 
 export default router;

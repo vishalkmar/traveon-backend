@@ -52,6 +52,7 @@ export const getAllPackagesConfig = async (req, res) => {
       const c = byGtx.get(pkg.gtxPkgId);
       const isEnabled = c ? Boolean(c.isEnabled) : true;
       const isTopSelling = c ? Boolean(c.isTopSelling) : false;
+      const flowString = c?.flowString || null;
       return {
         id: c?.id ?? null,
         packageId: pkg.id,
@@ -62,6 +63,7 @@ export const getAllPackagesConfig = async (req, res) => {
         createdAt: c?.createdAt ?? pkg.createdAt,
         isEnabled,
         isTopSelling,
+        flowString,
       };
     });
 
@@ -420,11 +422,11 @@ export const toggleTopSelling = async (req, res) => {
   }
 };
 
-// Get top-selling packages (public endpoint — returns gtxPkgIds that are top selling + enabled)
+// Get top-selling packages (public endpoint — returns gtxPkgIds that are top selling)
 export const getTopSellingGtxIds = async (req, res) => {
   try {
     const topConfigs = await PackageConfig.findAll({
-      where: { isTopSelling: true, isEnabled: true },
+      where: { isTopSelling: true },
       attributes: ["gtxPkgId"],
     });
     const ids = topConfigs.map((c) => c.gtxPkgId);
@@ -435,12 +437,76 @@ export const getTopSellingGtxIds = async (req, res) => {
   }
 };
 
+// Public: get custom flow string for a package (used by Book Now button)
+export const getPackageFlowString = async (req, res) => {
+  try {
+    const { gtxPkgId } = req.params;
+    const gid = Number(gtxPkgId);
+    if (Number.isNaN(gid)) {
+      return res.status(400).json({ success: false, message: "Invalid GTX package ID" });
+    }
+    const config = await PackageConfig.findOne({
+      where: { gtxPkgId: gid },
+      attributes: ["flowString"],
+    });
+    res.status(200).json({ success: true, flowString: config?.flowString || null });
+  } catch (error) {
+    console.error("Error fetching package flow string:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch flow string", error: error.message });
+  }
+};
+
+// Admin: set / update / clear flow string for a package
+export const updateFlowString = async (req, res) => {
+  try {
+    const { gtxPkgId } = req.params;
+    const gid = Number(gtxPkgId);
+    if (Number.isNaN(gid)) {
+      return res.status(400).json({ success: false, message: "Invalid GTX package ID" });
+    }
+    const { flowString } = req.body; // null or empty string = clear
+
+    let config = await PackageConfig.findOne({ where: { gtxPkgId: gid } });
+
+    if (!config) {
+      const pkg = await Package.findOne({ where: { gtxPkgId: gid } });
+      if (!pkg) {
+        return res.status(404).json({ success: false, message: "Package not found" });
+      }
+      config = await PackageConfig.create({
+        packageId: pkg.id,
+        gtxPkgId: gid,
+        packageName: pkg.name,
+        countriesId: pkg.countryIds ?? null,
+        minPrice: pkg.minPrice,
+        maxPrice: pkg.maxPrice,
+        isEnabled: true,
+        flowString: flowString || null,
+      });
+    } else {
+      config.flowString = flowString || null;
+      await config.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: flowString ? "Flow string updated" : "Flow string cleared",
+      data: { flowString: config.flowString },
+    });
+  } catch (error) {
+    console.error("Error updating flow string:", error);
+    res.status(500).json({ success: false, message: "Failed to update flow string", error: error.message });
+  }
+};
+
 export default {
   getAllPackagesConfig,
   getCountriesFromPackages,
   togglePackageStatus,
   toggleTopSelling,
   getTopSellingGtxIds,
+  getPackageFlowString,
+  updateFlowString,
   isPackageEnabled,
   getEnabledPackages,
   getPackageConfigDetails,
