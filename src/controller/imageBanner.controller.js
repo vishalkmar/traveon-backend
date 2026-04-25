@@ -2,6 +2,19 @@ import db from "../models/index.js";
 
 const { ImageBanner } = db;
 
+// Normalize a redirect URL: trim, allow empty/null, prepend https:// for bare domains
+const normalizeRedirectUrl = (url) => {
+  if (url === null || url === undefined) return null;
+  const trimmed = String(url).trim();
+  if (!trimmed) return null;
+  // Allow internal paths like "/packages" or full external URLs
+  if (trimmed.startsWith("/") || trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  // Bare domain — prepend https
+  return `https://${trimmed}`;
+};
+
 // Public: get all active banners ordered by displayOrder
 export const getActiveBanners = async (req, res) => {
   try {
@@ -11,7 +24,7 @@ export const getActiveBanners = async (req, res) => {
         ["displayOrder", "ASC"],
         ["createdAt", "ASC"],
       ],
-      attributes: ["id", "imageData", "displayOrder", "createdAt"],
+      attributes: ["id", "imageData", "displayOrder", "redirectUrl", "createdAt"],
     });
     res.status(200).json({ success: true, data: banners });
   } catch (error) {
@@ -28,7 +41,7 @@ export const getAllBanners = async (req, res) => {
         ["displayOrder", "ASC"],
         ["createdAt", "ASC"],
       ],
-      attributes: ["id", "imageData", "displayOrder", "isActive", "createdAt", "updatedAt"],
+      attributes: ["id", "imageData", "displayOrder", "isActive", "redirectUrl", "createdAt", "updatedAt"],
     });
     res.status(200).json({ success: true, data: banners });
   } catch (error) {
@@ -40,7 +53,7 @@ export const getAllBanners = async (req, res) => {
 // Admin: create a new banner
 export const createBanner = async (req, res) => {
   try {
-    const { imageData, displayOrder, isActive } = req.body;
+    const { imageData, displayOrder, isActive, redirectUrl } = req.body;
 
     if (!imageData || !imageData.trim()) {
       return res.status(400).json({ success: false, message: "Image is required" });
@@ -50,6 +63,7 @@ export const createBanner = async (req, res) => {
       imageData,
       displayOrder: displayOrder ?? 0,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
+      redirectUrl: normalizeRedirectUrl(redirectUrl),
     });
 
     res.status(201).json({ success: true, message: "Banner created successfully", data: banner });
@@ -63,7 +77,7 @@ export const createBanner = async (req, res) => {
 export const updateBanner = async (req, res) => {
   try {
     const { id } = req.params;
-    const { imageData, displayOrder, isActive } = req.body;
+    const { imageData, displayOrder, isActive, redirectUrl } = req.body;
 
     const banner = await ImageBanner.findByPk(id);
     if (!banner) {
@@ -73,6 +87,7 @@ export const updateBanner = async (req, res) => {
     if (imageData !== undefined) banner.imageData = imageData;
     if (displayOrder !== undefined) banner.displayOrder = Number(displayOrder);
     if (isActive !== undefined) banner.isActive = Boolean(isActive);
+    if (redirectUrl !== undefined) banner.redirectUrl = normalizeRedirectUrl(redirectUrl);
 
     await banner.save();
 

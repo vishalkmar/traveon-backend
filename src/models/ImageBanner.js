@@ -27,6 +27,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      redirectUrl: {
+        type: DataTypes.STRING(2000),
+        allowNull: true,
+        defaultValue: null,
+        comment: 'Optional URL to redirect to when banner is clicked',
+      },
     },
     {
       sequelize,
