@@ -30,23 +30,80 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-     port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.DB_PORT || 3306),
     dialect: process.env.DB_DIALECT || "mysql",
+    logging: false,
+    dialectOptions: {
+      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT || 60000),
+    },
+    pool: {
+      max: Number(process.env.DB_POOL_MAX || 20),
+      min: Number(process.env.DB_POOL_MIN || 2),
+      acquire: Number(process.env.DB_POOL_ACQUIRE || 120000),
+      idle: Number(process.env.DB_POOL_IDLE || 10000),
+      evict: Number(process.env.DB_POOL_EVICT || 1000),
+    },
+    retry: {
+      max: Number(process.env.DB_RETRY_MAX || 3),
+      match: [
+        /ETIMEDOUT/,
+        /SequelizeConnectionError/,
+        /SequelizeConnectionAcquireTimeoutError/,
+      ],
+    },
   },
   test: {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-     port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.DB_PORT || 3306),
     dialect: process.env.DB_DIALECT || "mysql",
+    logging: false,
+    dialectOptions: {
+      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT || 60000),
+    },
+    pool: {
+      max: Number(process.env.DB_POOL_MAX || 10),
+      min: Number(process.env.DB_POOL_MIN || 0),
+      acquire: Number(process.env.DB_POOL_ACQUIRE || 120000),
+      idle: Number(process.env.DB_POOL_IDLE || 10000),
+      evict: Number(process.env.DB_POOL_EVICT || 1000),
+    },
+    retry: {
+      max: Number(process.env.DB_RETRY_MAX || 2),
+      match: [
+        /ETIMEDOUT/,
+        /SequelizeConnectionError/,
+        /SequelizeConnectionAcquireTimeoutError/,
+      ],
+    },
   },
   production: {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-     port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.DB_PORT || 3306),
     dialect: process.env.DB_DIALECT || "mysql",
+    logging: false,
+    dialectOptions: {
+      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT || 60000),
+    },
+    pool: {
+      max: Number(process.env.DB_POOL_MAX || 20),
+      min: Number(process.env.DB_POOL_MIN || 2),
+      acquire: Number(process.env.DB_POOL_ACQUIRE || 120000),
+      idle: Number(process.env.DB_POOL_IDLE || 10000),
+      evict: Number(process.env.DB_POOL_EVICT || 1000),
+    },
+    retry: {
+      max: Number(process.env.DB_RETRY_MAX || 3),
+      match: [
+        /ETIMEDOUT/,
+        /SequelizeConnectionError/,
+        /SequelizeConnectionAcquireTimeoutError/,
+      ],
+    },
   },
 };

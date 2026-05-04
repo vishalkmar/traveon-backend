@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       redirectUrl: {
         type: DataTypes.STRING(2000),
+        field: 'redirect_url',
         allowNull: true,
         defaultValue: null,
         comment: 'Optional URL to redirect to when banner is clicked',

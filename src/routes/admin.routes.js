@@ -11,6 +11,8 @@ const {
   ImageBanner,
   WhatsappFlow,
   Destination,
+  Review,
+  TeamMember,
 } = require("../models");
 
 // Get Dashboard Stats
@@ -39,6 +41,8 @@ router.get("/stats", authenticateToken, async (req, res) => {
     });
     const bannerCount = await safeCount(ImageBanner);
     const whatsappFlowCount = await safeCount(WhatsappFlow);
+    const reviewCount = await safeCount(Review);
+    const teamMemberCount = await safeCount(TeamMember);
     const totalInquiries = tourCount + visa10Count + visa30Count + queryCount;
 
     res.json({
@@ -53,6 +57,8 @@ router.get("/stats", authenticateToken, async (req, res) => {
         packageConfigCount,
         bannerCount,
         whatsappFlowCount,
+        reviewCount,
+        teamMemberCount,
         totalInquiries,
       },
     });

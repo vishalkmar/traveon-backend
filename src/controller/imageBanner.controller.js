@@ -1,6 +1,13 @@
 import db from "../models/index.js";
+import {
+  clearCachedValue,
+  getCachedValue,
+  setCachedValue,
+} from "../utils/responseCache.js";
 
 const { ImageBanner } = db;
+const ACTIVE_BANNERS_CACHE_KEY = "image-banners:active";
+const ACTIVE_BANNERS_CACHE_TTL_MS = 60 * 1000;
 
 // Normalize a redirect URL: trim, allow empty/null, prepend https:// for bare domains
 const normalizeRedirectUrl = (url) => {
@@ -18,6 +25,11 @@ const normalizeRedirectUrl = (url) => {
 // Public: get all active banners ordered by displayOrder
 export const getActiveBanners = async (req, res) => {
   try {
+    const cachedResponse = getCachedValue(ACTIVE_BANNERS_CACHE_KEY);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
+
     const banners = await ImageBanner.findAll({
       where: { isActive: true },
       order: [
@@ -26,7 +38,13 @@ export const getActiveBanners = async (req, res) => {
       ],
       attributes: ["id", "imageData", "displayOrder", "redirectUrl", "createdAt"],
     });
-    res.status(200).json({ success: true, data: banners });
+    const response = { success: true, data: banners };
+    setCachedValue(
+      ACTIVE_BANNERS_CACHE_KEY,
+      response,
+      ACTIVE_BANNERS_CACHE_TTL_MS
+    );
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching active banners:", error);
     res.status(500).json({ success: false, message: "Failed to fetch banners", error: error.message });
@@ -59,12 +77,18 @@ export const createBanner = async (req, res) => {
       return res.status(400).json({ success: false, message: "Image is required" });
     }
 
+    const normalizedUrl = normalizeRedirectUrl(redirectUrl);
+    console.log("[createBanner] received redirectUrl:", JSON.stringify(redirectUrl), "→ normalized:", JSON.stringify(normalizedUrl));
+
     const banner = await ImageBanner.create({
       imageData,
       displayOrder: displayOrder ?? 0,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
-      redirectUrl: normalizeRedirectUrl(redirectUrl),
+      redirectUrl: normalizedUrl,
     });
+    clearCachedValue("image-banners:");
+
+    console.log("[createBanner] saved banner.redirectUrl:", JSON.stringify(banner.redirectUrl));
 
     res.status(201).json({ success: true, message: "Banner created successfully", data: banner });
   } catch (error) {
@@ -87,9 +111,15 @@ export const updateBanner = async (req, res) => {
     if (imageData !== undefined) banner.imageData = imageData;
     if (displayOrder !== undefined) banner.displayOrder = Number(displayOrder);
     if (isActive !== undefined) banner.isActive = Boolean(isActive);
-    if (redirectUrl !== undefined) banner.redirectUrl = normalizeRedirectUrl(redirectUrl);
+    if (redirectUrl !== undefined) {
+      const normalizedUrl = normalizeRedirectUrl(redirectUrl);
+      console.log("[updateBanner] received redirectUrl:", JSON.stringify(redirectUrl), "→ normalized:", JSON.stringify(normalizedUrl));
+      banner.redirectUrl = normalizedUrl;
+    }
 
     await banner.save();
+    clearCachedValue("image-banners:");
+    console.log("[updateBanner] after save, banner.redirectUrl:", JSON.stringify(banner.redirectUrl));
 
     res.status(200).json({ success: true, message: "Banner updated successfully", data: banner });
   } catch (error) {
@@ -107,6 +137,7 @@ export const deleteBanner = async (req, res) => {
       return res.status(404).json({ success: false, message: "Banner not found" });
     }
     await banner.destroy();
+    clearCachedValue("image-banners:");
     res.status(200).json({ success: true, message: "Banner deleted successfully" });
   } catch (error) {
     console.error("Error deleting banner:", error);

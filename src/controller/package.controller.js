@@ -4,9 +4,15 @@ import {
   createPackageSchema,
   updatePackageSchema,
 } from "../validation/package.validation.js";
+import {
+  clearCachedValue,
+  getCachedValue,
+  setCachedValue,
+} from "../utils/responseCache.js";
 
 const Package = db.Package;
 const PackageConfig = db.PackageConfig;
+const PACKAGE_LIST_CACHE_TTL_MS = 15 * 1000;
 
 /** Route param is either DB UUID (`packages.id`) or numeric GTX id (`gtx_pkg_id`). */
 const ANY_UUID_RE =
@@ -306,6 +312,7 @@ export const createPackage = async (req, res) => {
     }
 
     const createdPackage = await Package.create(value);
+    clearCachedValue("packages:list:");
 
     return res.status(201).json({
       success: true,
@@ -348,6 +355,21 @@ export const getAllPackages = async (req, res) => {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
     const offset = (pageNumber - 1) * limitNumber;
+    const cacheKey = `packages:list:${JSON.stringify({
+      page: pageNumber,
+      limit: limitNumber,
+      destination: destination || null,
+      country: country || null,
+      isActive: isActive ?? null,
+      featured: featured ?? null,
+      agencyId: agencyId || null,
+      gtxPkgId: gtxPkgId || null,
+    })}`;
+
+    const cachedResponse = getCachedValue(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
 
     const disabledRows = await PackageConfig.findAll({
       where: { isEnabled: false },
@@ -382,7 +404,7 @@ export const getAllPackages = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({
+    const response = {
       success: true,
       message: "Packages retrieved successfully",
       data: rows,
@@ -392,7 +414,10 @@ export const getAllPackages = async (req, res) => {
         limit: limitNumber,
         pages: Math.ceil(count / limitNumber),
       },
-    });
+    };
+
+    setCachedValue(cacheKey, response, PACKAGE_LIST_CACHE_TTL_MS);
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Get All Packages Error:", error);
     return res.status(500).json({
@@ -539,6 +564,7 @@ export const updatePackage = async (req, res) => {
     }
 
     const updatedPackage = await existingPackage.update(value);
+    clearCachedValue("packages:list:");
 
     return res.status(200).json({
       success: true,
@@ -596,6 +622,7 @@ export const updatePackageByGtxPkgId = async (req, res) => {
     }
 
     const updatedPackage = await existingPackage.update(value);
+    clearCachedValue("packages:list:");
 
     return res.status(200).json({
       success: true,
@@ -627,6 +654,7 @@ export const deletePackage = async (req, res) => {
     }
 
     await packageData.destroy();
+    clearCachedValue("packages:list:");
 
     return res.status(200).json({
       success: true,
@@ -659,6 +687,7 @@ export const deletePackageByGtxPkgId = async (req, res) => {
     }
 
     await packageData.destroy();
+    clearCachedValue("packages:list:");
 
     return res.status(200).json({
       success: true,
@@ -710,6 +739,7 @@ export const upsertPackageByGtxPkgId = async (req, res) => {
       }
 
       const updatedPackage = await existingPackage.update(value);
+      clearCachedValue("packages:list:");
 
       return res.status(200).json({
         success: true,
@@ -737,6 +767,7 @@ export const upsertPackageByGtxPkgId = async (req, res) => {
     }
 
     const createdPackage = await Package.create(value);
+    clearCachedValue("packages:list:");
 
     return res.status(201).json({
       success: true,

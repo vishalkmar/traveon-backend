@@ -1,7 +1,18 @@
 import db from "../models/index.js";
+import {
+  clearCachedValue,
+  getCachedValue,
+  setCachedValue,
+} from "../utils/responseCache.js";
 
 const { Blog, Destination } = db;
 import { v4 as uuidv4 } from "uuid";
+
+const BLOG_LIST_CACHE_PREFIX = "blogs:list:";
+const BLOG_DETAIL_CACHE_PREFIX = "blogs:detail:";
+const BLOG_SLUG_CACHE_PREFIX = "blogs:slug:";
+const BLOG_DESTINATION_CACHE_PREFIX = "blogs:destination:";
+const BLOG_CACHE_TTL_MS = 60 * 1000;
 
 // Create Blog
 export const createBlog = async (req, res) => {
@@ -51,6 +62,8 @@ export const createBlog = async (req, res) => {
       readTime: readTime || "5 min read",
       date: date || new Date().toISOString().split('T')[0],
     });
+    clearCachedValue("blogs:");
+    clearCachedValue("destinations:list");
 
     res.status(201).json({
       success: true,
@@ -71,12 +84,25 @@ export const createBlog = async (req, res) => {
 export const getAllBlogs = async (req, res) => {
   try {
     const { destinationId, category, page = 1, limit = 10 } = req.query;
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const cacheKey = `${BLOG_LIST_CACHE_PREFIX}${JSON.stringify({
+      destinationId: destinationId || null,
+      category: category || null,
+      page: pageNumber,
+      limit: limitNumber,
+    })}`;
+
+    const cachedResponse = getCachedValue(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
     
     let where = {};
     if (destinationId) where.destinationId = destinationId;
     if (category) where.category = category;
 
-    const offset = (page - 1) * limit;
+    const offset = (pageNumber - 1) * limitNumber;
 
     const { count, rows } = await Blog.findAndCountAll({
       where,
@@ -87,21 +113,24 @@ export const getAllBlogs = async (req, res) => {
           attributes: ["id", "name", "slug"],
         },
       ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: limitNumber,
+      offset,
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: rows,
       pagination: {
         total: count,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(count / limit),
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.ceil(count / limitNumber),
       },
-    });
+    };
+
+    setCachedValue(cacheKey, response, BLOG_CACHE_TTL_MS);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Get Blogs Error:", error);
     res.status(500).json({
@@ -116,6 +145,11 @@ export const getAllBlogs = async (req, res) => {
 export const getBlogById = async (req, res) => {
   try {
     const { id } = req.params;
+    const cacheKey = `${BLOG_DETAIL_CACHE_PREFIX}${id}`;
+    const cachedResponse = getCachedValue(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
 
     const blog = await Blog.findByPk(id, {
       include: [
@@ -134,10 +168,13 @@ export const getBlogById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: blog,
-    });
+    };
+
+    setCachedValue(cacheKey, response, BLOG_CACHE_TTL_MS);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Get Blog By ID Error:", error);
     res.status(500).json({
@@ -152,6 +189,11 @@ export const getBlogById = async (req, res) => {
 export const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    const cacheKey = `${BLOG_SLUG_CACHE_PREFIX}${slug}`;
+    const cachedResponse = getCachedValue(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
 
     const blog = await Blog.findOne({
       where: { slug },
@@ -171,10 +213,13 @@ export const getBlogBySlug = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: blog,
-    });
+    };
+
+    setCachedValue(cacheKey, response, BLOG_CACHE_TTL_MS);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Get Blog By Slug Error:", error);
     res.status(500).json({
@@ -225,6 +270,8 @@ export const updateBlog = async (req, res) => {
       readTime: readTime || blog.readTime,
       date: date || blog.date,
     });
+    clearCachedValue("blogs:");
+    clearCachedValue("destinations:list");
 
     res.status(200).json({
       success: true,
@@ -255,6 +302,8 @@ export const deleteBlog = async (req, res) => {
     }
 
     await blog.destroy();
+    clearCachedValue("blogs:");
+    clearCachedValue("destinations:list");
 
     res.status(200).json({
       success: true,
@@ -275,6 +324,18 @@ export const getBlogsByDestination = async (req, res) => {
   try {
     const { destinationId } = req.params;
     const { page = 1, limit = 10 } = req.query;
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const cacheKey = `${BLOG_DESTINATION_CACHE_PREFIX}${JSON.stringify({
+      destinationId,
+      page: pageNumber,
+      limit: limitNumber,
+    })}`;
+
+    const cachedResponse = getCachedValue(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
 
     // Check if destination exists
     const destination = await Destination.findByPk(destinationId);
@@ -285,25 +346,28 @@ export const getBlogsByDestination = async (req, res) => {
       });
     }
 
-    const offset = (page - 1) * limit;
+    const offset = (pageNumber - 1) * limitNumber;
 
     const { count, rows } = await Blog.findAndCountAll({
       where: { destinationId },
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: limitNumber,
+      offset,
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: rows,
       pagination: {
         total: count,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(count / limit),
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.ceil(count / limitNumber),
       },
-    });
+    };
+
+    setCachedValue(cacheKey, response, BLOG_CACHE_TTL_MS);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Get Blogs by Destination Error:", error);
     res.status(500).json({

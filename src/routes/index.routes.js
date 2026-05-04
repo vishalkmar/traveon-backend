@@ -12,6 +12,8 @@ import blogRoutes from "./blog.routes.js";
 import packageConfigRoutes from "./packageConfig.routes.js";
 import whatsappFlowRoutes from "./whatsappFlow.routes.js";
 import imageBannerRoutes from "./imageBanner.routes.js";
+import reviewRoutes from "./review.routes.js";
+import teamMemberRoutes from "./teamMember.routes.js";
 import { apiLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
@@ -32,5 +34,7 @@ router.use("/v1/destinations", destinationRoutes);
 router.use("/v1/blog", blogRoutes);
 router.use("/v1/whatsapp-flows", whatsappFlowRoutes);
 router.use("/v1/image-banners", imageBannerRoutes);
+router.use("/v1/reviews", reviewRoutes);
+router.use("/v1/team-members", teamMemberRoutes);
 
 export default router;

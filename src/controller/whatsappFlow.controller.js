@@ -1,10 +1,22 @@
 import db from "../models/index.js";
+import {
+  clearCachedValue,
+  getCachedValue,
+  setCachedValue,
+} from "../utils/responseCache.js";
 
 const { WhatsappFlow } = db;
+const ACTIVE_FLOWS_CACHE_KEY = "whatsapp-flows:active";
+const ACTIVE_FLOWS_CACHE_TTL_MS = 60 * 1000;
 
 // Public: get all active flows ordered by displayOrder
 export const getActiveFlows = async (req, res) => {
   try {
+    const cachedResponse = getCachedValue(ACTIVE_FLOWS_CACHE_KEY);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
+
     const flows = await WhatsappFlow.findAll({
       where: { isActive: true },
       order: [
@@ -13,7 +25,13 @@ export const getActiveFlows = async (req, res) => {
       ],
       attributes: ["id", "title", "flowMessage", "imageData", "phoneNumber", "displayOrder"],
     });
-    res.status(200).json({ success: true, data: flows });
+    const response = { success: true, data: flows };
+    setCachedValue(
+      ACTIVE_FLOWS_CACHE_KEY,
+      response,
+      ACTIVE_FLOWS_CACHE_TTL_MS
+    );
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching active whatsapp flows:", error);
     res.status(500).json({ success: false, message: "Failed to fetch flows", error: error.message });
@@ -59,6 +77,7 @@ export const createFlow = async (req, res) => {
       displayOrder: displayOrder ?? 0,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
     });
+    clearCachedValue("whatsapp-flows:");
 
     res.status(201).json({ success: true, message: "Flow created successfully", data: flow });
   } catch (error) {
@@ -86,6 +105,7 @@ export const updateFlow = async (req, res) => {
     if (isActive !== undefined) flow.isActive = Boolean(isActive);
 
     await flow.save();
+    clearCachedValue("whatsapp-flows:");
 
     res.status(200).json({ success: true, message: "Flow updated successfully", data: flow });
   } catch (error) {
@@ -103,6 +123,7 @@ export const deleteFlow = async (req, res) => {
       return res.status(404).json({ success: false, message: "Flow not found" });
     }
     await flow.destroy();
+    clearCachedValue("whatsapp-flows:");
     res.status(200).json({ success: true, message: "Flow deleted successfully" });
   } catch (error) {
     console.error("Error deleting whatsapp flow:", error);

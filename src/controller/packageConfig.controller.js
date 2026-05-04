@@ -1,5 +1,6 @@
 import db from "../models/index.js";
 import { Op } from "sequelize";
+import { clearCachedValue } from "../utils/responseCache.js";
 
 const { Package, PackageConfig } = db;
 
@@ -198,6 +199,7 @@ export const togglePackageStatus = async (req, res) => {
       message: `Package ${isEnabled ? 'enabled' : 'disabled'} successfully`,
       data: config
     });
+    clearCachedValue("packages:list:");
   } catch (error) {
     console.error("Error toggling package status:", error);
     res.status(500).json({
@@ -366,6 +368,7 @@ export const bulkUpdatePackageStatus = async (req, res) => {
       message: "Bulk update completed",
       data: results
     });
+    clearCachedValue("packages:list:");
   } catch (error) {
     console.error("Error in bulk update:", error);
     res.status(500).json({
@@ -416,6 +419,7 @@ export const toggleTopSelling = async (req, res) => {
       message: `Package ${isTopSelling ? "marked as" : "removed from"} top selling`,
       data: config,
     });
+    clearCachedValue("packages:list:");
   } catch (error) {
     console.error("Error toggling top selling:", error);
     res.status(500).json({ success: false, message: "Failed to toggle top selling", error: error.message });

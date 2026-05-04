@@ -1,6 +1,13 @@
 import db from "../models/index.js";
+import {
+  clearCachedValue,
+  getCachedValue,
+  setCachedValue,
+} from "../utils/responseCache.js";
 
 const { Destination, Blog } = db;
+const DESTINATION_CACHE_KEY = "destinations:list";
+const DESTINATION_CACHE_TTL_MS = 60 * 1000;
 
 // Create Destination
 export const createDestination = async (req, res) => {
@@ -45,6 +52,7 @@ export const createDestination = async (req, res) => {
       description,
       image,
     });
+    clearCachedValue(DESTINATION_CACHE_KEY);
 
     res.status(201).json({
       success: true,
@@ -63,6 +71,11 @@ export const createDestination = async (req, res) => {
 // Get All Destinations
 export const getAllDestinations = async (req, res) => {
   try {
+    const cachedResponse = getCachedValue(DESTINATION_CACHE_KEY);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
+
     const destinations = await Destination.findAll({
       include: [
         {
@@ -73,10 +86,13 @@ export const getAllDestinations = async (req, res) => {
       ],
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: destinations,
-    });
+    };
+
+    setCachedValue(DESTINATION_CACHE_KEY, response, DESTINATION_CACHE_TTL_MS);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Get Destinations Error:", error);
     res.status(500).json({
@@ -154,6 +170,7 @@ export const updateDestination = async (req, res) => {
       description: description || destination.description,
       image: image || destination.image,
     });
+    clearCachedValue(DESTINATION_CACHE_KEY);
 
     res.status(200).json({
       success: true,
@@ -184,6 +201,7 @@ export const deleteDestination = async (req, res) => {
     }
 
     await destination.destroy();
+    clearCachedValue(DESTINATION_CACHE_KEY);
 
     res.status(200).json({
       success: true,
