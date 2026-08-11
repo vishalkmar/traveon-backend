@@ -29,6 +29,19 @@ export const apiLimiter = rateLimit({
   },
 });
 
+// Viewing one document = 1 session + 1 stream, so this is generous for a
+// real reader but shuts down anyone scripting the endpoint.
+export const secureDocLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many document requests, please try again later",
+  },
+});
+
 export const formLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // Limit each IP to 5 submissions per hour

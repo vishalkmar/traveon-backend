@@ -13,8 +13,12 @@ const { sequelize } = db;
 
 
 import routes from "./routes/index.routes.js";
+import { warmSecureDocs } from "./controller/secureDoc.controller.js";
 
 const app = express();
+
+// Pre-load protected documents so the flipbook never waits on S3.
+warmSecureDocs();
 
 /* Cors middleware */
 app.use(cors({ origin: "*" }));
