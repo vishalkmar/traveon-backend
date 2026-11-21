@@ -47,4 +47,15 @@ Object.keys(db).forEach((modelName) => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+// Adds the two-factor columns to `users` if they are missing. Auth code awaits
+// this before touching the users table; it never rejects, it only logs.
+const { ensureUserSecurityColumns } = require("../db/userSecuritySchema");
+db.schemaReady = ensureUserSecurityColumns(sequelize.getQueryInterface(), Sequelize)
+  .then((added) => {
+    if (added.length) console.log("[2FA] Added users columns:", added.join(", "));
+  })
+  .catch((err) => {
+    console.error("[2FA] Could not add two-factor columns to users:", err.message);
+  });
+
 module.exports = db;

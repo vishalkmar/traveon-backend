@@ -1,35 +1,12 @@
 "use strict";
-const bcrypt = require("bcrypt");
-const { v4: uuidv4 } = require("uuid");
-
+/**
+ * Superseded by 20261121000000-secure-admin-credentials.js.
+ *
+ * This used to insert a hard-coded "Traveon" / "Admin@123" admin. It is now a
+ * no-op so `db:seed:all` can never bring that weak account back; the admin is
+ * created from ADMIN_USERNAME / ADMIN_PASSWORD in .env by the newer seeder.
+ */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    const hashedPassword = await bcrypt.hash("Admin@123", 10);
-
-    // Check if admin user already exists
-    const existingAdmin = await queryInterface.rawSelect(
-      "users",
-      {
-        where: { username: "Traveon" },
-      },
-      ["id"]
-    );
-
-    if (!existingAdmin) {
-      return queryInterface.bulkInsert("users", [
-        {
-          id: uuidv4(),
-          username: "Traveon",
-          password: hashedPassword,
-          role: "admin",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ]);
-    }
-  },
-
-  down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete("users", { username: "Traveon" }, {});
-  },
+  up: async () => {},
+  down: async () => {},
 };

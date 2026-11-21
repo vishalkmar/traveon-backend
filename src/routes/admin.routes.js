@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateToken } = require("../middleware/auth.middleware");
+const { authenticateToken, authorize } = require("../middleware/auth.middleware");
 const {
   TourBooking,
   VisaBooking,
@@ -16,7 +16,7 @@ const {
 } = require("../models");
 
 // Get Dashboard Stats
-router.get("/stats", authenticateToken, async (req, res) => {
+router.get("/stats", authenticateToken, authorize("admin"), async (req, res) => {
   try {
     const safeCount = async (model, options) => {
       try {

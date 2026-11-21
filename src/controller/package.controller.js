@@ -274,6 +274,31 @@ const mapPackageData = (data = {}) => {
   if (!mapped.supplierName) mapped.supplierName = toNullIfEmpty(data.supplierName);
   if (!mapped.supplierId) mapped.supplierId = toStringOrNull(data.supplierId);
 
+  // The blocks above read everything out of longJsonInfo.package, which is the
+  // shape the GTX feed sends. A plain edit ("just change the description")
+  // posts the column name directly, so accept that spelling too.
+  const PLAIN_TEXT_FIELDS = [
+    "details",
+    "inclusion",
+    "inclusionsText",
+    "exclusions",
+    "conditions",
+    "refundPolicy",
+    "cancellationPolicy",
+    "bookingTerms",
+    "travelBasics",
+    "whyUseUs",
+    "imgThumbnail",
+    "imgHeader",
+    "url",
+    "priceRange",
+  ];
+  for (const field of PLAIN_TEXT_FIELDS) {
+    if (!mapped[field] && data[field] !== undefined) {
+      mapped[field] = toNullIfEmpty(data[field]);
+    }
+  }
+
   return mapped;
 };
 
@@ -516,6 +541,33 @@ export const getPackageByGtxPkgId = async (req, res) => {
 };
 
 // PUT - Update package by UUID ID
+/**
+ * mapPackageData() always returns the full column set, filling anything the
+ * caller did not send with null. That is correct for create/upsert, but on a
+ * PUT it would blank every field the caller left out. This keeps only the
+ * columns the request actually spoke to.
+ *
+ * A key is kept when the mapped value differs from what an empty body
+ * produces (so nested and aliased sources like longJsonInfo.package.Name are
+ * picked up), or when the caller named the field outright (so a deliberate
+ * `{"details": ""}` can still clear it).
+ */
+const pickProvidedFields = (mappedData, body = {}) => {
+  const baseline = mapPackageData({});
+  const sentDirectly = new Set(Object.keys(body || {}));
+
+  return Object.fromEntries(
+    Object.entries(mappedData).filter(([key, value]) => {
+      if (sentDirectly.has(key)) return true;
+      const untouched = baseline[key];
+      if (value === untouched) return false;
+      // null/undefined and NaN both mean "nothing was supplied"
+      if (value == null && untouched == null) return false;
+      return true;
+    })
+  );
+};
+
 export const updatePackage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -529,7 +581,7 @@ export const updatePackage = async (req, res) => {
       });
     }
 
-    const mappedData = mapPackageData(req.body);
+    const mappedData = pickProvidedFields(mapPackageData(req.body), req.body);
 
     const { error, value } = updatePackageSchema.validate(mappedData, {
       abortEarly: false,
@@ -597,7 +649,7 @@ export const updatePackageByGtxPkgId = async (req, res) => {
       });
     }
 
-    const mappedData = mapPackageData(req.body);
+    const mappedData = pickProvidedFields(mapPackageData(req.body), req.body);
 
     const { error, value } = updatePackageSchema.validate(mappedData, {
       abortEarly: false,

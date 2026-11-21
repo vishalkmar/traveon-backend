@@ -1,12 +1,14 @@
 import express from "express";
 import { validateDocument } from "../controller/aiValidation.controller.js";
-import upload from "../middleware/upload.js"; // Multer middleware
-import { authenticateToken } from "../middleware/auth.middleware.js"; // Optional: protect if needed
+import upload, { verifyFileMagic } from "../middleware/upload.js"; // validates type/size/magic bytes
+import { aiLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
 // Route: POST /api/v1/validation/validate
-// Expects 'file' in formdata and 'docType' in body
-router.post("/validate", upload.single("file"), validateDocument);
+// Public (used by the booking form), but rate-limited because it calls a
+// paid AI API, and the upload middleware only accepts images/PDF (by header
+// and by real file signature).
+router.post("/validate", aiLimiter, upload.single("file"), verifyFileMagic, validateDocument);
 
 export default router;

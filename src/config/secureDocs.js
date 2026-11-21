@@ -19,9 +19,14 @@ const SECURE_DOCS = {
 
 export const getSecureDoc = (slug) => SECURE_DOCS[slug] || null;
 
-/** Secret used to sign session tokens. */
-export const getTokenSecret = () =>
-  process.env.SECURE_DOC_SECRET || process.env.JWT_SECRET || "secure-doc-dev-secret";
+/** Secret used to sign session tokens. No weak fallback — must be configured. */
+export const getTokenSecret = () => {
+  const secret = process.env.SECURE_DOC_SECRET || process.env.JWT_SECRET;
+  if (!secret || secret.trim().length < 16) {
+    throw new Error("SECURE_DOC_SECRET (or JWT_SECRET) must be set to a long random value");
+  }
+  return secret;
+};
 
 /** Seconds a session token stays valid after /session. */
 export const TOKEN_TTL_SECONDS = Number(process.env.SECURE_DOC_TOKEN_TTL || 120);

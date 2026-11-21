@@ -113,7 +113,7 @@ export const createTourBooking = async (req, res) => {
     console.error("Tour Booking Error:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Internal Server Error",
+      message: "Could not process the booking. Please check your details and try again.",
     });
   }
 };
@@ -171,7 +171,7 @@ export const getAllTourBookings = async (req, res) => {
     });
   } catch (error) {
     console.error("Get All Tour Bookings Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
   }
 };
 
@@ -192,7 +192,7 @@ export const getTourBookingById = async (req, res) => {
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
     console.error("Get Tour Booking Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
   }
 };
 
@@ -227,7 +227,7 @@ export const updateTourBookingStatus = async (req, res) => {
       .json({ success: false, message: "Booking not found" });
   } catch (error) {
     console.error("Update Status Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
   }
 };
 
@@ -256,7 +256,7 @@ export const updateTourBookingDetails = async (req, res) => {
       .json({ success: false, message: "Booking not found" });
   } catch (error) {
     console.error("Update Details Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
   }
 };
 
@@ -277,6 +277,6 @@ export const deleteTourBooking = async (req, res) => {
       .json({ success: false, message: "Booking not found" });
   } catch (error) {
     console.error("Delete Booking Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
   }
 };

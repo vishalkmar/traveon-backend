@@ -108,7 +108,11 @@ const fingerprint = (req) =>
 
 const originAllowed = (req) => {
   const allowed = getAllowedOrigins();
-  if (!allowed.length) return true; // not configured => open (local dev)
+  if (!allowed.length) {
+    // Not configured: open for local dev, but default-deny in production so a
+    // missing env var never silently exposes the document to any origin.
+    return process.env.NODE_ENV !== "production";
+  }
 
   const raw = req.headers.origin || req.headers.referer || "";
   if (!raw) return false;

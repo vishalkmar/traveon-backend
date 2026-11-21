@@ -1,6 +1,8 @@
 import express from "express";
 import destinationController from "../controller/destination.controller.js";
-import { authenticateToken } from "../middleware/auth.middleware.js";
+import { authenticateToken, authorize } from "../middleware/auth.middleware.js";
+
+const adminOnly = [authenticateToken, authorize("admin")];
 
 const router = express.Router();
 
@@ -9,8 +11,8 @@ router.get("/", destinationController.getAllDestinations);
 router.get("/:slug", destinationController.getDestinationWithBlogs);
 
 // Admin routes (protected)
-router.post("/", authenticateToken, destinationController.createDestination);
-router.patch("/:id", authenticateToken, destinationController.updateDestination);
-router.delete("/:id", authenticateToken, destinationController.deleteDestination);
+router.post("/", adminOnly, destinationController.createDestination);
+router.patch("/:id", adminOnly, destinationController.updateDestination);
+router.delete("/:id", adminOnly, destinationController.deleteDestination);
 
 export default router;

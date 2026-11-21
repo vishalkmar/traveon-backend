@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 
-const SECRET_KEY = process.env.JWT_SECRET || "jktyagi";
+// No weak fallback. (This legacy helper is unused; kept only so an accidental
+// import fails safely instead of signing tokens with a guessable key.)
+const SECRET_KEY = process.env.JWT_SECRET;
 
 export function parseJwt(token) {
   return JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());

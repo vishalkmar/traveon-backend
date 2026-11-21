@@ -1,10 +1,13 @@
 import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+import { JWT_SECRET } from "../config/secrets.js";
 
 export const authenticateToken = (req, res, next) => {
+  // Prefer the httpOnly cookie (not readable by JavaScript, so it can't be
+  // stolen from the browser); fall back to the Authorization header for
+  // backward compatibility / non-browser clients.
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const headerToken = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const token = (req.cookies && req.cookies.token) || headerToken;
 
   if (!token) {
     return res.status(401).json({ success: false, message: "Access Denied" });
